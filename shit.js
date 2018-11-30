@@ -4,7 +4,7 @@ var ballRadius = 10;
 var x = canvas.width/2;
 var y = canvas.height-30;
 var shitSpeed = 1;
-var fps = 10;
+var fps = 30;
 var t = 0;
 var paddleHeight = 10;
 var paddleWidth = 75;
@@ -12,8 +12,10 @@ var paddleX = (canvas.width-paddleWidth)/2;
 var rightPressed = false;
 var leftPressed = false;
 var shits = []
+var image = new Image();		/* 이미지 객체 생성 */
+image.src = "ddong.png";		/* 이미지 파일 이름 설정 */
 
-const shitInterval = 700
+const shitInterval = 200
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -46,7 +48,6 @@ function makeShit(){
   shits.push({x: Math.floor(Math.random() * canvas.width), y: 0, t:t})
 }
 function drawShit(){
-
   shits.forEach((shit, index, o)=>{
     console.log(shit)
     // 똥이 화면을 벗어난다면
@@ -56,11 +57,7 @@ function drawShit(){
       o.splice(index, 1)
     }
     else {
-      ctx.beginPath();
-      ctx.arc(shit.x, shit.y, ballRadius, 0, Math.PI*2);
-      ctx.fillStyle = "#0095DD"
-      ctx.fill()
-      ctx.closePath();
+      ctx.drawImage(image, shit.x, shit.y);
     }
   })
 }
