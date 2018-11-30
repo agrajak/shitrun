@@ -1,9 +1,9 @@
 const canvasX = 350
 const canvasY = 500
 class People{
-  constructor(x, isMe, nick){
+  constructor(x, isMe, nick, alive){
     this.x = x
-    this.alive = true
+    this.alive = alive
     this.y = canvasY
     this.isMe = isMe
     this.nick = nick

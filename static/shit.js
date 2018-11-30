@@ -3,15 +3,16 @@ const ctx = canvas.getContext("2d");
 const socket = io("165.246.222.55:8088")
 
 // SOCKET
-socket.on('game_start', (users)=>{
+socket.on('game_start', (users, seed)=>{
     $('#modal_readied').modal('hide')
 
     console.log(users.length+'명이 게임 시작')
     multi_status = MUL_PLAYING
     
+    setSeed(seed)
     enemys = []
     users.filter(x=>x.nick != nickname).forEach(x=>{
-        enemys.push(new People(0, false, x.nick))
+        enemys.push(new People(0, false, x.nick, true))
     })
     console.log(enemys.length+'명이 게임 시작')
     multi_start()
@@ -67,6 +68,8 @@ var multi_status = 0;
 const MUL_UNREADY = 0
 const MUL_READY = 1
 const MUL_PLAYING = 2
+const MUL_DEAD = 3
+const MUL_END = 4
 
 var timer;
 
@@ -77,6 +80,8 @@ const img_man = new Image();
 img_man.src = "man.png";
 const img_enemy = new Image();
 img_enemy.src = "enemy.png"
+const img_dead = new Image();
+img_dead.src = "dead.png"
 
 
 document.addEventListener("keydown", keyDownHandler, false);
@@ -88,12 +93,21 @@ canvas.addEventListener("touchend", touchEndHandler, false);
 
 // EVENT HANDLER FUNCTION
 function keyDownHandler(e) {
-    if(e.keyCode == 39) // ->로 이동
-        rightPressed = true;
-    if(e.keyCode == 37) // <-로 이동
-        leftPressed = true;
-
+    if(multi_status == MUL_DEAD || multi_status == MUL_END){
+        rightPressed = false;
+        leftPressed = false;
+    } 
+    else{
+        if(e.keyCode == 39) // ->로 이동
+            rightPressed = true;
+        if(e.keyCode == 37) // <-로 이동
+            leftPressed = true;
+    }
     if(e.keyCode == 80) { // P키
+        // 멀티에선 사용 불가
+        if(status == MUL_PLAYING)
+            return
+
         // 죽은 상태일때는 무시
         if(status == DEAD){
             return
@@ -114,12 +128,19 @@ function keyUpHandler(e) {
 }
 
 function touchStartHandler(e) {
-    if(e.touches[0].clientX < canvas.width / 2){
-        leftTouched = true;
-        rightTouched = false;
-    } else{
-        leftTouched = false;
-        rightTouched = true;
+    if(multi_status == MUL_DEAD || multi_states == MUL_END){
+        rightPressed = false;
+        leftPressed = false;
+    }
+    else{
+        if(e.touches[0].clientX < canvas.width / 2){
+            leftTouched = true;
+            rightTouched = false;
+        }
+        else{
+            leftTouched = false;
+            rightTouched = true;
+        }
     }
 }
 
@@ -130,11 +151,16 @@ function touchEndHandler(e) {
 
 
 function drawPeople(people) {
-    console.log(people.nick + ", " + people.x)
-    if(people.isMe)
-        ctx.drawImage(img_man, people.getX(), canvas.height-peopleHeight);
-    else 
-        ctx.drawImage(img_enemy, people.getX(), canvas.height-peopleHeight);
+    console.log(people)
+    if(!people.isAlive()){
+        ctx.drawImage(img_dead, people.getX(), canvas.height-peopleHeight);
+    }
+    else{
+        if(people.isMe)
+            ctx.drawImage(img_man, people.getX(), canvas.height-peopleHeight);
+        else 
+            ctx.drawImage(img_enemy, people.getX(), canvas.height-peopleHeight);
+    }
 }
 
 function drawScore() {
@@ -161,7 +187,7 @@ function reset(seed){
     status = PLAYING
     rightPressed = leftPressed = false
     rightTouched = leftTouched = false
-    people = new People((canvas.width-peopleWidth)/2, true, nickname)
+    people = new People((canvas.width-peopleWidth)/2, true, nickname, true)
     setSeed(seed)
 }
 function doesShitHitPeople(shit, people){
@@ -187,9 +213,10 @@ function drawShit(){
             console.log("똥: " + shit.getX() + ", " + shit.getY());
             console.log("사람: " + people.getX())
             // 멀티방일때
-            if(multi_status == PLAYING){
+            if(multi_status == MUL_PLAYING){
                 console.log('주거라')
                 people.kill()
+                multi_status = MUL_DEAD
             }
             else status = MENU
         }        
@@ -215,23 +242,25 @@ function drawEnemy(){
     })
 }
 function draw() {
-    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     console.log(`${enemys.length}명 존재`)
     enemys.forEach(enemy=>{
-        console.log(enemy)
-        drawPeople(new People(enemy.x, false, enemy.nick))
+        drawPeople(new People(enemy.x, false, enemy.nick, enemy.alive))
     })
+    
+    socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive()}) 
+    
     if(multi_status == MUL_PLAYING){
-        socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive()})
+        console.log(people)
         status = PLAYING
     }
-    if(status == MENU){
+    if(multi_status != MUL_DEAD && status == MENU){
         clearInterval(timer);
         open_menu();
     }
 
-    if(status != PLAYING)
+    if(status != PLAYING && multi_status != MUL_DEAD)
         return
 
     // draw 는 1000/fps(ms) 마다 실행된다.
