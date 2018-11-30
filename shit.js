@@ -6,8 +6,9 @@ var y = canvas.height-30;
 var shitSpeed = 1;
 var fps = 30;
 var t = 0;
+var score = 0;
 var paddleHeight = 10;
-var paddleWidth = 75;
+var paddleWidth = 30;
 var paddleX = (canvas.width-paddleWidth)/2;
 var rightPressed = false;
 var leftPressed = false;
@@ -47,14 +48,24 @@ function drawPerson() {
 function makeShit(){
   shits.push({x: Math.floor(Math.random() * canvas.width), y: 0, t:t})
 }
+function reset(){
+    t = 0
+    shits = []
+    score = 0
+}
 function drawShit(){
   shits.forEach((shit, index, o)=>{
-    console.log(shit)
     // 똥이 화면을 벗어난다면
     shit.y += (t-shit.t)*shitSpeed;
+    if(Math.abs(shit.y-canvas.height) < paddleHeight/2 && Math.abs(shit.x-paddleX) < paddleWidth/2){
+        alert('최종 점수 : '+score)
+        reset()
+    }
 
-    if(shit.y < 0){
+    if(shit.y > canvas.height){
       o.splice(index, 1)
+      score += 20
+      console.log(score)
     }
     else {
       ctx.drawImage(image, shit.x, shit.y);
@@ -81,5 +92,6 @@ function draw() {
     t++;
 }
 
+reset()
 setInterval(draw, 1000/fps);
 // 현재 시간 = 1000/fps*t
