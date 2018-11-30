@@ -1,0 +1,22 @@
+{
+  "name": "shitrun",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Agrajak/shitrun.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Agrajak/shitrun/issues"
+  },
+  "homepage": "https://github.com/Agrajak/shitrun#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
