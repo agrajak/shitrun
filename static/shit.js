@@ -1,6 +1,6 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const socket = io("165.246.240.185:8088")
+const socket = io("165.246.222.55:8088")
 
 // SOCKET
 socket.on('chatroom', (html)=>{
@@ -61,8 +61,8 @@ socket.on("game_user_info", (usernick, x, isAlive)=>{
     }
 })
 
-const shitInterval = 100
-const shitSpeed = 1 // 똥 속도 배율
+const shitInterval = 50
+const shitSpeed = 5 // 똥 속도 배율
 const fps = 25; // 화면 주사율
 const peopleHeight = 50
 const peopleWidth = 30
