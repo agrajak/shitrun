@@ -35,8 +35,10 @@ var countTask = cron.schedule('* * * * * *', ()=>{
     console.log('카운트 다운 '+countdown+'초')
     countdown--
     io.emit('countdown', countdown)
+    io.emit('chatroom', `<b>${countdown}초 후 게임이 시작됩니다.<b> <br>`)
     if(users.filter(x=>x.ready).length < 2){
       console.log('조건 만족 못해서 카운트 다운 취소')
+      io.emit('chatroom', `<b>준비중인 인원이 적어 게임이 취소되었습니다.<b> <br>`)
       countdown = NO_COUNTDOWN
     }      
   }
@@ -44,10 +46,13 @@ var countTask = cron.schedule('* * * * * *', ()=>{
     console.log('게임 시작!')
     status = PLAYING
     playing_users = []
-    users.filter(x=>x.ready).forEach(x=>{
-      playing_users.push({
-        id: x.id, nick: x.nick, alive: true, max_score: 0
-      })
+    users.forEach(x=>{
+      if(x.ready){
+        playing_users.push({
+          id: x.id, nick: x.nick, alive: true, max_score: 0
+        })  
+        x.ready = false
+      }
     })
     console.log(`현재 ${playing_users.length}명 접속중`)
     var seed = "seed"+Math.floor(Math.random()*20)
@@ -128,6 +133,7 @@ io.on('connection', socket=>{
     }
     else {
       users[users.map(x=>x.id).indexOf(id)].ready = ready
+      io.emit('chatroom', `<b>유저 ${socket.nick}님이 준비상태를 ${ready}로 변경하였습니다.</b>`)
       console.log(users)
     }
 
