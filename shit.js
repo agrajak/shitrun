@@ -11,6 +11,8 @@ var paddleX;
 
 var rightPressed = false;
 var leftPressed = false;
+var rightTouched = false;
+var leftTouched = false;
 var shits = []
 
 const PLAYING = 0
@@ -32,6 +34,8 @@ const shitInterval = 100
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+canvas.addEventListener("touchstart", touchStartHandler, false);
+canvas.addEventListener("touchend", touchEndHandler, false);
 
 function keyDownHandler(e) {
     if(e.keyCode == 39) {
@@ -56,6 +60,19 @@ function keyUpHandler(e) {
     else if(e.keyCode == 37) {
         leftPressed = false;
     }
+}
+function touchStartHandler(e) {
+    if(e.touches[0].clientX < canvas.width / 2){
+        leftTouched = true;
+        rightTouched = false;
+    } else{
+        leftTouched = false;
+        rightTouched = true;
+    }
+}
+function touchEndHandler(e) {
+    rightTouched = false;
+    leftTouched = false;
 }
 
 function drawPerson() {
