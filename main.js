@@ -29,7 +29,7 @@ function finishGame(lastone, max_score){
   else {
     io.emit('chatroom', `<b>일행 중 잠수부가 있어 게임을 강제종료합니다. </b><br>`)
   }
-  io.emit('game_end', lastone)
+  io.emit('game_end', lastone, max_score, playing_users)
   console.log('게임 끗!')
   playing_users = []
   status = WAITING
@@ -54,7 +54,7 @@ var countTask = cron.schedule('* * * * * *', ()=>{
     users.forEach(x=>{
       if(x.ready){
         playing_users.push({
-          id: x.id, nick: x.nick, alive: true, max_score: 0
+          id: x.id, nick: x.nick, alive: true, max_score: 0, score: 0
         })  
         x.ready = false
       }
@@ -116,6 +116,7 @@ io.on('connection', socket=>{
         }
         lastone = p.nick
         playing_users[i].max_score = max_score
+        playing_users[i].score = score
         break;
       }
     }
@@ -123,9 +124,11 @@ io.on('connection', socket=>{
     if(playing_users.filter(x=>x.alive == true).length == 0){
       finishGame(lastone, maxScore)
     }
-
+    playing_users.forEach(x=>{
+      console.log('score : '+x.score + " max_score"+x.max_score)
+    })
     // 혹은 maxScore의 최대와 최소값이 100이상 차이날때 => 잠수다. 서버 종료
-    console.log('maxScore:'+maxScore+ 'minScore:'+minScore)
+    //console.log('maxScore:'+maxScore+ 'minScore:'+minScore)
     if(maxScore - minScore > 200){
       finishGame(null, null)
     }
