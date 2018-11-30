@@ -1,8 +1,19 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const socket = io("165.246.222.55:8088")
+const socket = io("165.246.240.185:8088")
 
 // SOCKET
+socket.on('countdown', (c)=>{
+    console.log(`${c}초후 게임시작!`)
+})
+socket.on('users', (users, isPlaying)=>{
+    lobby = users
+    if(isPlaying)
+        console.log('현재 게임 진행중')
+    
+    console.log('현재 로비에 있는 유저:'+users.length)
+    console.log('현재 레디 중인 유저'+users.filter(x=>x.ready).length)
+})
 socket.on('game_start', (users, seed)=>{
     $('#modal_readied').modal('hide')
 
@@ -19,6 +30,7 @@ socket.on('game_start', (users, seed)=>{
 })
 socket.on('game_end', (winner)=>{
     console.log(`승자는 ${winner}!`)
+    // TODO: 메뉴 띄우기
     status = MENU
 })
 socket.on("game_user_info", (usernick, x, isAlive)=>{
@@ -41,11 +53,13 @@ const scorePerShit = 20
 var seed = "seed"
 var t = 0; // 시간(clock)
 var score = 0;
+var max_score = 0;
 var nickname = 0;
 
 var people
 var shits = []
 var enemys = []
+var lobby = []
 // INPUT STATUS
 var rightPressed, leftPressed, rightTouched, leftTouched
 
@@ -167,7 +181,8 @@ function drawScore() {
     ctx.font = "20px Comic Sans MS"
     ctx.fillStyle="black"
     ctx.textAlign="left"
-    ctx.fillText("Score:" + score, 10,30);
+    ctx.fillText("Your Score:" + score, 10,30);
+    ctx.fillText("Enemy Score:" + max_score, 10,60);
 }
 
 function drawText(){
@@ -182,7 +197,7 @@ function setSeed(seed){
     Math.seedrandom(this.seed)
 }
 function reset(seed){
-    t = score = 0
+    t = score = max_score = 0
     shits = []
     status = PLAYING
     rightPressed = leftPressed = false
@@ -224,7 +239,9 @@ function drawShit(){
     if(index!=-1){
         // 지울 똥이 있으면 지우고 점수를 더해준다.
         shits.shift();
-        score += scorePerShit;
+        if(people.isAlive())
+            score += scorePerShit;
+        max_score += scorePerShit;
     }
 }
 
@@ -249,7 +266,7 @@ function draw() {
         drawPeople(new People(enemy.x, false, enemy.nick, enemy.alive))
     })
     
-    socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive()}) 
+    socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive(), score:score}) 
     
     if(multi_status == MUL_PLAYING){
         console.log(people)

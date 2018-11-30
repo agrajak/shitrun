@@ -69,20 +69,26 @@ io.on('connection', socket=>{
 
   })
   socket.on('peopleInfo', (data)=>{
+    if(status != PLAYING){
+      return;
+    }
     var {x, isAlive} = data
     console.log(socket.nick + ", " +  x);
     io.emit('game_user_info', socket.nick, x, isAlive)
     if(isAlive == false){
+      let lastone = ''
       for(var i=0;i<playing_users.length;i++){
-        if(playing_users[i].nick == socket.nick)
+        if(playing_users[i].nick == socket.nick){
+          lastone = playing_users[i].nick
           playing_users[i].alive = false
+          break;
+        }
       }
-      console.log(playing_users.filter(x=>x.alive == true).length+'명 생존')
+      // 살아있는 놈이 없을때...
       if(playing_users.filter(x=>x.alive == true).length == 0){
-        io.emit('game_end')
+        io.emit('game_end', lastone)
         playing_users = []
         status = WAITING
-
       }
 
     }
