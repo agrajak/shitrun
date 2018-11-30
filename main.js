@@ -22,7 +22,13 @@ function startCountDown(){
   countdown = 5
   countTask.start();
 }
-function finishGame(lastone){
+function finishGame(lastone, max_score){
+  if(lastone){
+    io.emit('chatroom', `<b>${lastone}님이 ${max_score}점으로 일등하셨습니다! </b><br>`)
+  }
+  else {
+    io.emit('chatroom', `<b>일행 중 잠수부가 있어 게임을 강제종료합니다. </b><br>`)
+  }
   io.emit('game_end', lastone)
   console.log('게임 끗!')
   playing_users = []
@@ -34,7 +40,6 @@ var countTask = cron.schedule('* * * * * *', ()=>{
   if(countdown != NO_COUNTDOWN){
     console.log('카운트 다운 '+countdown+'초')
     countdown--
-    io.emit('countdown', countdown)
     io.emit('chatroom', `<b>${countdown}초 후 게임이 시작됩니다.<b> <br>`)
     if(users.filter(x=>x.ready).length < 2){
       console.log('조건 만족 못해서 카운트 다운 취소')
@@ -76,10 +81,13 @@ io.on('connection', socket=>{
     if(socket.id in users.map(u=>u.id)){
       users.splice(users.map(x=>x.id).indexOf(socket.id), 1)
     }
+    io.emit('chatroom', `${socket.nick}(${address})님이 로그아웃하셨습니다.<br>`)
   })
   socket.on('chat', (chat)=>{
     console.log(socket.nick + ":"+chat)
-    io.emit('chatroom', `<b>${socket.nick}</b>(${socket.ready?'레디':'안레디'}): ${chat}<br>`)
+    if(socket.nick && chat){
+      io.emit('chatroom', `<b>${socket.nick}</b>(${socket.ready?'레디':'안레디'}): ${chat}<br>`)
+    }
   })
   socket.on('peopleInfo', (data)=>{
     if(status != PLAYING){
@@ -87,37 +95,40 @@ io.on('connection', socket=>{
     }
     var {x, isAlive, score, max_score} = data
     io.emit('game_user_info', socket.nick, x, isAlive)
-      var lastone = ''
-      for(var i=0;i<playing_users.length;i++){
-        // 조건에 맞는 아이디를 찾으면
-        if(playing_users[i].nick == socket.nick){
-          if(isAlive == false){
-            playing_users[i].alive = false
-          }
-          lastone = playing_users[i].nick
-          playing_users[i].max_score = max_score
-          break;
-        }
+    var lastone = ''
+    var maxScore = -1
+    var minScore = 999999
+
+    for(var i=0;i<playing_users.length;i++){
+      // 최소, 최대 찾기
+      let p = playing_users[i]
+      if(p.max_score > maxScore){
+        maxScore = p.max_score
       }
-      // 살아있는 놈이 없을때...
-      if(playing_users.filter(x=>x.alive == true).length == 0){
-        finishGame(lastone)
+      if(p.max_score < minScore){
+        minScore = p.max_score
       }
 
-      // 혹은 maxScore의 최대와 최소값이 100이상 차이날때 => 잠수다. 서버 종료
-      var maxScore = -1
-      var minScore = 999999
-      playing_users.forEach(p=>{
-        if(p.max_score > maxScore){
-          maxScore = p.max_score
+      // 조건에 맞는 아이디를 찾으면
+      if(p.nick == socket.nick){
+        if(isAlive == false){
+          playing_users[i].alive = false
         }
-        else if(p.max_score < minScore){
-          minScore = p.max_score
-        }
-      })
-      if(maxScore - minScore > 200){
-        finishGame(null)
+        lastone = p.nick
+        playing_users[i].max_score = max_score
+        break;
       }
+    }
+    // 살아있는 놈이 없을때...
+    if(playing_users.filter(x=>x.alive == true).length == 0){
+      finishGame(lastone, maxScore)
+    }
+
+    // 혹은 maxScore의 최대와 최소값이 100이상 차이날때 => 잠수다. 서버 종료
+    console.log('maxScore:'+maxScore+ 'minScore:'+minScore)
+    if(maxScore - minScore > 200){
+      finishGame(null, null)
+    }
   })
   socket.on('login', (nick, ready)=>{
     let id = socket.id
@@ -130,10 +141,11 @@ io.on('connection', socket=>{
       users.push({
         id, nick, address, ready
       })
+      io.emit('chatroom', `${nick}(${address})님이 로그인하셨습니다.<br>`)
     }
     else {
       users[users.map(x=>x.id).indexOf(id)].ready = ready
-      io.emit('chatroom', `<b>유저 ${socket.nick}님이 준비상태를 ${ready}로 변경하였습니다.</b>`)
+      io.emit('chatroom', `<b>유저 ${socket.nick}님이 준비상태를 ${ready}로 변경하였습니다.</b><br>`)
       console.log(users)
     }
 

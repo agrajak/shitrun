@@ -10,22 +10,6 @@ socket.on('chatroom', (html)=>{
 
     chatroom.scrollTop(chatroom.prop('scrollHeight'));
 })
-socket.on('countdown', (c)=>{
-    if(isMulti == 1)
-        console.log(`${c}초후 게임시작!`)
-})
-
-socket.on('users', (users, isPlaying)=>{
-    if(isMulti == 1) {
-        lobby = users
-        if(isPlaying)
-            console.log('현재 게임 진행중')
-        
-        console.log('현재 로비에 있는 유저:'+users.length)
-        console.log('현재 레디 중인 유저'+users.filter(x=>x.ready).length)
-    }
-})
-
 socket.on('game_start', (users, seed)=>{
     if(isMulti == 1){
         $('#modal_readied').modal('hide')
@@ -298,7 +282,7 @@ function draw() {
         enemys.forEach(enemy=>{
             drawPeople(new People(enemy.x, false, enemy.nick, enemy.alive))
         })
-        socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive(), score:score}) 
+        socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive(), score, max_score}) 
 
         if(multi_status == MUL_END){
             clearInterval(timer);
