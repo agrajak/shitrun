@@ -1,9 +1,11 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const socket = io("165.246.240.185:8088")
+const socket = io("165.246.222.55:8088")
 
 // SOCKET
 socket.on('game_start', (users)=>{
+    $('#modal_readied').modal('hide')
+
     console.log(users.length+'명이 게임 시작')
     multi_status = MUL_PLAYING
     
@@ -11,8 +13,8 @@ socket.on('game_start', (users)=>{
     users.filter(x=>x.nick != nickname).forEach(x=>{
         enemys.push(new People(0, false, x.nick))
     })
+    console.log(enemys.length+'명이 게임 시작')
     multi_start()
-    
 })
 socket.on('game_end', (winner)=>{
     console.log(`승자는 ${winner}!`)
@@ -22,7 +24,9 @@ socket.on("game_user_info", (usernick, x, isAlive)=>{
     for(var i=0;i<enemys.length;i++){
         if(enemys[i].nick == usernick){
             enemys[i].x = x
-            enemys[i].isAlive = isAlive
+            if(!isAlive){
+                enemys[i].kill()
+            }
         }
     }
 })
@@ -72,7 +76,7 @@ img_shit.src = "ddong.png";
 const img_man = new Image();
 img_man.src = "man.png";
 const img_enemy = new Image();
-img_enemy.src = "man.png"
+img_enemy.src = "enemy.png"
 
 
 document.addEventListener("keydown", keyDownHandler, false);
@@ -126,6 +130,7 @@ function touchEndHandler(e) {
 
 
 function drawPeople(people) {
+    console.log(people.nick + ", " + people.x)
     if(people.isMe)
         ctx.drawImage(img_man, people.getX(), canvas.height-peopleHeight);
     else 
@@ -156,7 +161,7 @@ function reset(seed){
     status = PLAYING
     rightPressed = leftPressed = false
     rightTouched = leftTouched = false
-    people = new People((canvas.width-peopleWidth)/2, true)
+    people = new People((canvas.width-peopleWidth)/2, true, nickname)
     setSeed(seed)
 }
 function doesShitHitPeople(shit, people){
@@ -183,6 +188,7 @@ function drawShit(){
             console.log("사람: " + people.getX())
             // 멀티방일때
             if(multi_status == PLAYING){
+                console.log('주거라')
                 people.kill()
             }
             else status = MENU
@@ -209,11 +215,16 @@ function drawEnemy(){
     })
 }
 function draw() {
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    console.log(`${enemys.length}명 존재`)
+    enemys.forEach(enemy=>{
+        console.log(enemy)
+        drawPeople(new People(enemy.x, false, enemy.nick))
+    })
     if(multi_status == MUL_PLAYING){
+        socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive()})
         status = PLAYING
-        drawEnemy()
-        if(status == DEAD)
-        socket.emit('peopleInfo', {x: people.getX(), alive:people.isAlive()})
     }
     if(status == MENU){
         clearInterval(timer);
@@ -226,7 +237,6 @@ function draw() {
     // draw 는 1000/fps(ms) 마다 실행된다.
     // shitInterval(ms) 마다 될라면...
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     if(timeToMakeShit())
       makeShit(t);
 
@@ -277,8 +287,8 @@ function multi_ready(){
     $('#modal_readied').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_readied').modal('show')
     // getNickName
-    nick = $('#nickname').val()
-    socket.emit('login', nick, true)
+    nickname = $('#nickname').val()
+    socket.emit('login', nickname, true)
 
 }
 
@@ -288,6 +298,6 @@ function multi_unready(){
     // send server to unready
     $('#modal_multi').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_multi').modal('show')
-    nick = $('#nickname').val()
-    socket.emit('login', nick, false)
+    nickname = $('#nickname').val()
+    socket.emit('login', nickname, false)
 }

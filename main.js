@@ -22,7 +22,7 @@ heart.createEvent(1, (count, last)=>{
 var t=0;
 // https://github.com/socketio/socket.io/blob/master/examples/chat/index.js를 참조함
 function startCountDown(){
-  countdown = 10
+  countdown = 5
   countTask.start();
 }
 var countTask = cron.schedule('* * * * * *', ()=>{
@@ -60,8 +60,9 @@ io.on('connection', socket=>{
 
   })
   socket.on('peopleInfo', (data)=>{
-    var {x, alive} = data
-    io.emit('game_user_info', socket.nick, x, alive)
+    var {x, isAlive} = data
+    console.log(socket.nick + ", " +  x);
+    io.emit('game_user_info', socket.nick, x, isAlive)
   })
   socket.on('login', (nick, ready)=>{
     let id = socket.id

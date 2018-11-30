@@ -5,7 +5,8 @@ class People{
     this.x = x
     this.alive = true
     this.y = canvasY
-    this.isMe = isMe||true
+    this.isMe = isMe
+    this.nick = nick
   }
   movePeople(x){
     this.x += x
