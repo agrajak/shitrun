@@ -8,9 +8,32 @@ const server = require('http').Server(app)
 const io = require('socket.io')(server) // for socket programming (https://socket.io/)
 
 var users = []
+var countdown = -3
+var status = 2
 
+const PLAYING = 1
+const WAITING = 2
+var t=0;
 // https://github.com/socketio/socket.io/blob/master/examples/chat/index.js를 참조함
-
+function startCountDown(){
+  countdown = 10
+  countTask.start();
+}
+var countTask = cron.schedule('* * * * * *', ()=>{
+  if(countdown != -3){
+    console.log('카운트 다운 '+countdown+'초')
+    countdown--
+    if(users.filter(x=>x.ready).length < 2){
+      console.log('조건 만족 못해서 카운트 다운 취소')
+      countdown = -3
+    }      
+  }
+  else if(countdown == 0){
+    console.log('게임 시작!')
+    console.log(`현재 ${users.filter(x=>x.ready).length}}명 접속중`)
+    io.emit('game_start')
+  }
+})
 app.use(express.static('static'))
 
 server.listen(port, hostname, ()=>{
@@ -18,23 +41,42 @@ server.listen(port, hostname, ()=>{
 })
 
 io.on('connection', socket=>{
-  let addedUser = false
   let address = socket.handshake.address
   console.log('a user connected!')
   socket.on('disconnect', ()=>{
-    console.log('a user disconnected')
+    console.log((socket.nick||'nonamed ')+' disconnected')
+    if(socket.id in users.map(u=>u.id)){
+      users.splice(users.map(x=>x.id).indexOf(socket.id), 1)
+    }
+    console.log('현재 접속자수 :'+users.length)
+
+  })
+  socket.on('ping', ()=>{
+    
   })
   socket.on('login', (nick, ready)=>{
+    let id = socket.id
     socket.nick = nick
     socket.address = address
     socket.ready = ready
-    addedUser = true
     console.log(`${nick}(${address}) logined and ${ready?'ready':'no ready'}`)
-    if(ready){
-      socket.join('ready')
+    
+    if(!(users.find(x=>x.id == id))){
+      users.push({
+        id, nick, address, ready
+      })
     }
     else {
-      socket.join('no-ready')
+      users[users.map(x=>x.id).indexOf(id)].ready = ready
+      console.log(users)
+    }
+
+    if(users.filter(x=>x.ready==true).length >= 2){
+      users.filter(x=>x.ready==true).forEach(x=>{
+        console.log(`${x.nick}(${x.address}, ${x.id})가 준비중`)
+      })
+      console.log('게임 시작이 가능합니다.')
+      startCountDown()
     }
   })
 })
