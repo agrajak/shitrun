@@ -20,10 +20,13 @@ const PAUSE = 1
 const MENU = 2
 const DEAD = 3
 
-var status = 0
+const MUL_UNREADY = 0
+const MUL_READY = 1
 
-var image = new Image();		/* 이미지 객체 생성 */
-image.src = "ddong.png";		/* 이미지 파일 이름 설정 */
+var timer;
+var status = 0
+var multi_status = 0;
+var nickname;
 
 var img_shit = new Image();
 img_shit.src = "ddong.png";
@@ -44,15 +47,11 @@ function keyDownHandler(e) {
         leftPressed = true;
 
     if(e.keyCode == 80) { // P키
-        if(status == PLAYING){ 
+        if(status == PLAYING)
             status = PAUSE
-            console.log(shits.length);
-        }
         else 
             status = PLAYING
     }
-    if(e.keyCode == 78) // N키
-        reset()
 }
 
 function keyUpHandler(e) {
@@ -102,6 +101,7 @@ function reset(){
     paddleX = (canvas.width-paddleWidth)/2
     status = PLAYING
     rightPressed = leftPressed = false
+    rightTouched = leftTouched = false
 }
 
 function drawShit(){
@@ -112,10 +112,7 @@ function drawShit(){
 
         // 똥에 맞았을때
         if (Math.abs(shits[i].y-canvas.height) < paddleHeight && Math.abs(shits[i].x-paddleX) < paddleWidth/2){
-            console.log("똥: " + shits[i].x + ", " + shits[i].y);
-            console.log("사람: " + paddleX)
-            alert('최종 점수 : '+score+', 다시 시작하려면 N키를 누르시오')
-            status = DEAD
+            status = MENU
         }
 
         // 똥이 화면을 벗어난다면
@@ -144,6 +141,11 @@ function movePeople(){
 }
 
 function draw() {
+    if(status == MENU){
+        clearInterval(timer);
+        open_menu();
+    }
+
     if(status != PLAYING)
         return
 
@@ -162,6 +164,32 @@ function draw() {
     t++;
 }
 
-reset()
-setInterval(draw, 1000/fps);
-// 현재 시간 = 1000/fps*t
+function open_menu(){
+    document.getElementById("score").value = score;
+    $('#modal_menu').modal('show')
+}
+
+function single_init(){
+    $('#modal_menu').modal('hide')
+    reset()
+    timer = setInterval(draw, 1000/fps);
+}
+
+function multi_init(){
+    $('#modal_menu').modal('hide')
+    $('#modal_multi').modal('show')
+}
+
+function multi_ready(){
+    $('#modal_multi').modal('hide')
+    multi_status = MUL_READY;
+    // send server to ready
+    $('#modal_readied').modal('show')
+}
+
+function multi_unready(){
+    $('#modal_readied').modal('hide')
+    multi_status = MUL_UNREADY;
+    // send server to unready
+    $('#modal_multi').modal('show')
+}
