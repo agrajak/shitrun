@@ -1,42 +1,57 @@
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext("2d");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-var shitSpeed = 1; // 똥 속도 배율
-var fps = 25; // 화면 주사율
+const shitInterval = 100
+const shitSpeed = 1 // 똥 속도 배율
+const fps = 25; // 화면 주사율
+const peopleHeight = 50
+const peopleWidth = 30
+const scorePerShit = 20
+
+var seed = "seed"
 var t = 0; // 시간(clock)
 var score = 0;
-var paddleHeight = 50;
-var paddleWidth = 30;
-var paddleX;
+var nickname = 0;
 
-var rightPressed = false;
-var leftPressed = false;
-var rightTouched = false;
-var leftTouched = false;
+var people
 var shits = []
+var enemys = []
+// INPUT STATUS
+var rightPressed, leftPressed, rightTouched, leftTouched
 
+// STATUS 
+var status = 0 // 현재 상태
+// ENUM for status
 const PLAYING = 0
 const PAUSE = 1
 const MENU = 2
 const DEAD = 3
+const NOT_LOGGED = 4
+const READY = 5
+const NOT_READY = 6
 
-var status = 0
+var serverStatus = 0 // 서버 상태
+// ENUM for Server Status
+// PLAYING = 0
+// READY = 5
+// DEAD = 3
 
-var image = new Image();		/* 이미지 객체 생성 */
-image.src = "ddong.png";		/* 이미지 파일 이름 설정 */
-
-var img_shit = new Image();
+// IMAGE RESOURCES
+const img_shit = new Image();
 img_shit.src = "ddong.png";
-var img_man = new Image();
+const img_man = new Image();
 img_man.src = "man.png";
+const img_enemy = new Image();
+img_enemy.src = "man.png"
 
-const shitInterval = 100
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 canvas.addEventListener("touchstart", touchStartHandler, false);
 canvas.addEventListener("touchend", touchEndHandler, false);
 
+
+// EVENT HANDLER FUNCTION
 function keyDownHandler(e) {
     if(e.keyCode == 39)
         rightPressed = true;
@@ -77,8 +92,13 @@ function touchEndHandler(e) {
     leftTouched = false;
 }
 
-function drawPerson() {
-    ctx.drawImage(img_man, paddleX, canvas.height-paddleHeight);
+
+function drawPeople(people) {
+    // TODO: if(people.isEnemy())
+    if(people.isMe)
+        ctx.drawImage(img_man, people.getX(), canvas.height-peopleHeight);
+    else 
+        ctx.drawImage(img_enemy, people.getX(), canvas.height-peopleHeight);
 }
 
 function drawScore() {
@@ -93,53 +113,54 @@ function drawText(){
 }
 
 function makeShit(){
-  shits.push({x: Math.floor(Math.random() * canvas.width), y: 0, t:t})
+    shits.push(new Shit(t, seed))
 }
-
-function reset(){
+function setSeed(seed){
+    this.seed = seed||"seed"
+    Math.seedrandom(this.seed)
+}
+function reset(seed){
     t = score = 0
     shits = []
-    paddleX = (canvas.width-paddleWidth)/2
     status = PLAYING
     rightPressed = leftPressed = false
+    people = new People((canvas.width-peopleWidth)/2, true)
+    setSeed(seed)
 }
 
 function drawShit(){
-    var index = -1;
-    for(var i = 0; i < shits.length; i++){
-        shits[i].y += (t-shits[i].t)*shitSpeed;
-        shits[i].y = Math.floor(shits[i].y);
-
+    let index = -1;
+    
+    for(let i = 0; i < shits.length; i++){
+        let cS = shits[i] // currentShit
+        
+        // 똥이 화면을 벗어날때 moveShit은 false를 return한다.
+        if(!cS.moveShit(t)){
+            index = i;            
+        }
+        else {
+            ctx.drawImage(img_shit, cS.getX(), cS.getY());
+        }
         // 똥에 맞았을때
-        if (Math.abs(shits[i].y-canvas.height) < paddleHeight && Math.abs(shits[i].x-paddleX) < paddleWidth/2){
-            console.log("똥: " + shits[i].x + ", " + shits[i].y);
-            console.log("사람: " + paddleX)
+        if (Math.abs(cS.getY()-canvas.height) < peopleHeight && Math.abs(cS.getX()-people.getX()) < peopleWidth/2){
+            console.log("똥: " + cS.getX() + ", " + cS.getY());
+            console.log("사람: " + people.getX())
             alert('최종 점수 : '+score+', 다시 시작하려면 N키를 누르시오')
             status = DEAD
         }
-
-        // 똥이 화면을 벗어난다면
-        if(shits[i].y > canvas.height)
-            index = i;
-        else
-            ctx.drawImage(img_shit, shits[i].x, shits[i].y);
     }
     if(index!=-1){
         shits.shift();
-        score += 20;
+        score += scorePerShit;
     }
 }
 
 function movePeople(){
     if(rightPressed || rightTouched) {
-        paddleX += 7;
-        if(paddleX >= canvas.width)
-            paddleX = 0
+        people.movePeople(7)
     }
     else if(leftPressed || leftTouched) {
-        paddleX -= 7;
-        if(paddleX < 0)
-            paddleX = canvas.width - paddleWidth
+        people.movePeople(-7)
     }
 }
 
@@ -151,13 +172,15 @@ function draw() {
     // shitInterval(ms) 마다 될라면...
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawPerson();
     if(t*1000/fps % shitInterval == 0)
       makeShit(t);
 
-    drawShit();
-    drawScore();
     movePeople();
+
+    drawShit();
+    drawPeople(people);
+
+    drawScore();
   
     t++;
 }
