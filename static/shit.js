@@ -1,5 +1,6 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const socket = io("165.246.240.185:8088")
 
 const shitInterval = 100
 const shitSpeed = 1 // 똥 속도 배율
@@ -39,7 +40,6 @@ const MUL_UNREADY = 0
 const MUL_READY = 1
 
 var timer;
-var nickname;
 
 // IMAGE RESOURCES
 const img_shit = new Image();
@@ -220,6 +220,10 @@ function multi_ready(){
     multi_status = MUL_READY;
     // send server to ready
     $('#modal_readied').modal('show')
+    // getNickName
+    nick = $('#nickname').val()
+    socket.emit('login', nick, true)
+
 }
 
 function multi_unready(){
@@ -227,4 +231,6 @@ function multi_unready(){
     multi_status = MUL_UNREADY;
     // send server to unready
     $('#modal_multi').modal('show')
+    nick = $('#nickname').val()
+    socket.emit('login', nick, false)
 }

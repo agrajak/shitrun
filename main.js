@@ -17,13 +17,6 @@ server.listen(port, hostname, ()=>{
   console.log('server open!')
 })
 
-cron.schedule('*/5 * * * * *', ()=>{
-  // ping every 5seconds
-  let date = new Date()
-  io.emit('ping', date)
-  console.log('ping! at '+date)
-})
-
 io.on('connection', socket=>{
   let addedUser = false
   let address = socket.handshake.address
@@ -31,18 +24,20 @@ io.on('connection', socket=>{
   socket.on('disconnect', ()=>{
     console.log('a user disconnected')
   })
-  socket.on('login', (nick)=>{
-    if(addedUser) return
-      socket.nick = nick
-      socket.address = address
-      addedUser = true
+  socket.on('login', (nick, ready)=>{
+    socket.nick = nick
+    socket.address = address
+    socket.ready = ready
+    addedUser = true
+    console.log(`${nick}(${address}) logined and ${ready?'ready':'no ready'}`)
+    if(ready){
+      socket.join('ready')
+    }
+    else {
+      socket.join('no-ready')
+    }
   })
 })
-io.on('pong', ()=>{
-
+io.of('ready').on('connection', socket=>{
+  console.log(`${socket.nick} is now ready`)
 })
-io.on('login', ()=>{
-
-})
-io.set('origins', '*:*')
-
