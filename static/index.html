@@ -60,7 +60,7 @@
              <input class="btn btn-info" style="width: 100%" type="button" value="준비 완료" onclick="multi_ready()">
              <input class="btn btn-info" style="width: 100%" type="button" value="뒤로 가기" onclick="open_menu_in_modal_multi()">
            </form>
-  </div>
+       </div>
       </div>
     </div>
   </div>
@@ -72,21 +72,35 @@
          <div class="modal-head">
            <h5 class="modal-title">준비 완료</h5>
          </div>
-         <div class="modal-body">
+         <div class="modal-body" style="height: 400px">
+            <form class="form-group">
+              <label>상대방을 찾는중...</label>
+              <input class="btn btn-info" style="width: 100%" type="button" value="준비 취소" onclick="multi_unready()">
+            </form>
+            <div id="chatroom" style="height: 250px; overflow-y: scroll" ></div>
              <form class="form-group">
-               <label>상대방을 찾는중...</label>
-               <input class="btn btn-info" style="width: 100%" type="button" value="준비 취소" onclick="multi_unready()">
+              <input class="form-control" style="width: 100%" id="chat" placeholder="엔터키를 눌러 입력">
              </form>
-             <div id="chatroom" style="height: 400px; overflow-y: scroll" >
-             </div>
-             <form class="form-group">
-                 <input class="form-control" style="width: 100%" id="chat" placeholder="엔터키를 눌러 입력">
-             </form>
+            </div>
          </div>
         </div>
       </div>
     </div>
 
+    <!-- Multi menu -->
+    <div class="modal fade" style="width: 350px" id="modal_result" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog container" role="document">
+        <div class="modal-content container">
+          <div class="modal-head">
+            <h5 class="modal-title">게임 결과</h5>
+          </div>
+          <div class="modal-body">
+            <div id="result" style="height: 300px; overflow-y: scroll" ></div>
+            <input class="btn btn-info" style="width: 100%" type="button" value="돌아가기" onclick="multi_replay()">
+          </div>
+        </div>
+      </div>
+    </div>
     <video autoplay id="video"></video>
     <canvas id="output"></canvas>
 

@@ -1,6 +1,6 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const socket = io("165.246.240.185:8088")
+const socket = io("165.246.222.55:8088")
 
 // SOCKET
 socket.on('chatroom', (html)=>{
@@ -27,10 +27,12 @@ socket.on('game_start', (users, seed)=>{
     }
 })
 
-socket.on('game_end', (winner)=>{
-    console.log(`승자는 ${winner}!`)
+socket.on('game_end', (lastone, max_score, playing_users)=>{
+    console.log(`승자는 ${lastone}!`)
+    console.log(max_score)
+    console.log(playing_users)
     multi_status = MUL_END;
-    multi_end();
+    multi_end(playing_users);
 })
 
 socket.on("game_user_info", (usernick, x, isAlive)=>{
@@ -44,9 +46,9 @@ socket.on("game_user_info", (usernick, x, isAlive)=>{
         }
     }
 })
-
-const shitInterval = 100
-const shitSpeed = 1 // 똥 속도 배율
+var playing_users = []
+const shitInterval = 50
+const shitSpeed = 5 // 똥 속도 배율
 const fps = 25; // 화면 주사율
 const peopleHeight = 50
 const peopleWidth = 30
@@ -192,7 +194,7 @@ function drawScore() {
     ctx.fillStyle="black"
     ctx.textAlign="left"
     ctx.fillText("Your Score:" + score, 10,30);
-    ctx.fillText("Enemy Score:" + max_score, 10,60);
+    ctx.fillText("Max Score:" + max_score, 10,60);
 }
 
 function makeShit(){
@@ -346,6 +348,7 @@ function multi_init(){
 function multi_start(){
     $('#modal_multi').modal('hide')
     isMulti = 1;
+    $('#result').empty();
     reset()
     timer = setInterval(draw, 1000/fps);
 }
@@ -373,6 +376,25 @@ function multi_unready(){
     socket.emit('login', nickname, false)
 }
 
-function multi_end(){
+function customSort(a, b) { 
+    if(a.score == b.score){ 
+        return 0
+    } 
+    return a.score < b.score ? 1 : -1;
+} 
+
+function multi_end(playing_users){
+    var result = $('#result')
+    playing_users.sort(customSort);
+    playing_users.forEach(u=>{
+        result.append("<b>" + u.nick + "</b> : " + u.score + "점<br>");
+    })
+    $('#modal_result').modal('show')
+}
+
+function multi_replay(){
+    $('#modal_result').modal('hide')
+    isMulti = 1;
+    $('#modal_multi').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_multi').modal('show')
 }
