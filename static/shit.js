@@ -335,6 +335,7 @@ function single_init(){
     $('#modal_menu').modal('hide')
     isMulti = 0;
     reset()
+    setSeed("seed"+Math.floor(Math.random()*20))
     timer = setInterval(draw, 1000/fps);
 }
 
