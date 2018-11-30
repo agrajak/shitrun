@@ -61,14 +61,24 @@ function keyUpHandler(e) {
 function drawPerson() {
     ctx.drawImage(img_man, paddleX, canvas.height-paddleHeight);
 }
+function drawScore() {
+    ctx.font = "20px Comic Sans MS"
+    ctx.fillStyle="black"
+    ctx.textAlign="left"
+    ctx.fillText("Score:" + score, 10,30);
+    console.log(score)
+}
+function drawText(){
+}
 function makeShit(){
   shits.push({x: Math.floor(Math.random() * canvas.width), y: 0, t:t})
 }
 function reset(){
     t = score = 0
     shits = []
-    status = PLAYING
     paddleX = (canvas.width-paddleWidth)/2
+    status = PLAYING
+    rightPressed = leftPressed = false
 }
 function drawShit(){
   shits.forEach((shit, index, o)=>{
@@ -77,19 +87,29 @@ function drawShit(){
     if(Math.abs(shit.y-canvas.height) < paddleHeight/2 && Math.abs(shit.x-paddleX) < paddleWidth/2){
         alert('최종 점수 : '+score+', 다시 시작하려면 N키를 누르시오')
         status = DEAD
-        return
     }
 
     // 똥이 화면을 벗어난다면
     if(shit.y > canvas.height){
       o.splice(index, 1)
       score += 20
-      console.log(score)
     }
     else {
       ctx.drawImage(img_shit, shit.x, shit.y);
     }
   })
+}
+function movePeople(){
+    if(rightPressed) {
+        paddleX += 7;
+        if(paddleX > canvas.width)
+            paddleX = 0
+    }
+    else if(leftPressed) {
+        paddleX -= 7;
+        if(paddleX < 0)
+            paddleX = canvas.width - paddleWidth
+    }
 }
 function draw() {
     if(status != PLAYING){
@@ -104,17 +124,8 @@ function draw() {
       makeShit(t);
     }
     drawShit();
-
-    if(rightPressed) {
-        paddleX += 7;
-        if(paddleX > canvas.width)
-            paddleX = 0
-    }
-    else if(leftPressed) {
-        paddleX -= 7;
-        if(paddleX < 0)
-            paddleX = canvas.width - paddleWidth
-    }
+    drawScore();
+    movePeople();
   
     t++;
 }
