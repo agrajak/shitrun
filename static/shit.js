@@ -29,8 +29,6 @@ socket.on('game_start', (users, seed)=>{
 
 socket.on('game_end', (lastone, max_score, playing_users)=>{
     console.log(`승자는 ${lastone}!`)
-    console.log(max_score)
-    console.log(playing_users)
     multi_status = MUL_END;
     multi_end(playing_users);
 })
@@ -47,12 +45,12 @@ socket.on("game_user_info", (usernick, x, isAlive)=>{
     }
 })
 var playing_users = []
-const shitInterval = 50
+const shitInterval = 1;
 const shitSpeed = 5 // 똥 속도 배율
-const fps = 25; // 화면 주사율
+const fps = 50; // 화면 주사율
 const peopleHeight = 50
 const peopleWidth = 30
-const scorePerShit = 20
+const scorePerShit = 10
 
 var seed = "seed"
 var t = 0; // 시간(clock)
@@ -178,7 +176,6 @@ function touchEndHandler(e) {
 }
 
 function drawPeople(people) {
-    console.log(people)
     if(!people.isAlive())
         ctx.drawImage(img_dead, people.getX(), canvas.height-peopleHeight);
     else{
@@ -222,7 +219,8 @@ function doesShitHitPeople(shit, people){
 }
 
 function timeToMakeShit(){
-    return t*1000/fps % shitInterval == 0
+    console.log(t*1000/fps + ", " + shitInterval);
+    return (t*1000/fps) % (shitInterval*20) == 0
 }
 
 function drawShit(){
