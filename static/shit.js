@@ -2,7 +2,7 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 var shitSpeed = 1; // 똥 속도 배율
-var fps = 30; // 화면 주사율
+var fps = 25; // 화면 주사율
 var t = 0; // 시간(clock)
 var score = 0;
 var paddleHeight = 50;
@@ -45,8 +45,12 @@ function keyDownHandler(e) {
         leftPressed = true;
     }
     if(e.keyCode == 80) { // P키
-        if(status == PLAYING) status = PAUSE
-        else status = PLAYING
+        if(status == PLAYING){ 
+            status = PAUSE
+            console.log(shits.length);
+        }
+        else 
+            status = PLAYING
     }
     if(e.keyCode == 78){ // N키
         reset()
@@ -83,7 +87,6 @@ function drawScore() {
     ctx.fillStyle="black"
     ctx.textAlign="left"
     ctx.fillText("Score:" + score, 10,30);
-    console.log(score)
 }
 function drawText(){
 }
@@ -98,23 +101,27 @@ function reset(){
     rightPressed = leftPressed = false
 }
 function drawShit(){
-  shits.forEach((shit, index, o)=>{
-    shit.y += (t-shit.t)*shitSpeed;
-    // 똥에 맞았을때
-    if(Math.abs(shit.y-canvas.height) < paddleHeight/2 && Math.abs(shit.x-paddleX) < paddleWidth/2){
-        alert('최종 점수 : '+score+', 다시 시작하려면 N키를 누르시오')
-        status = DEAD
-    }
+    var index = -1;
+    for(var i = 0; i < shits.length; i++){
+        shits[i].y += (t-shits[i].t)*shitSpeed;
+        shits[i].y = Math.floor(shits[i].y);
 
-    // 똥이 화면을 벗어난다면
-    if(shit.y > canvas.height){
-      o.splice(index, 1)
-      score += 20
+        // 똥에 맞았을때
+        if (Math.abs(shits[i].y-canvas.height) < paddleHeight && Math.abs(shits[i].x-paddleX) < paddleWidth/2){
+            console.log("똥: " + shits[i].x + ", " + shits[i].y);
+            console.log("사람: " + paddleX)
+            alert('최종 점수 : '+score+', 다시 시작하려면 N키를 누르시오')
+            status = DEAD
+        }
+
+        // 똥이 화면을 벗어난다면
+        if(shits[i].y > canvas.height)
+            index = i;
+        else
+            ctx.drawImage(img_shit, shits[i].x, shits[i].y);
     }
-    else {
-      ctx.drawImage(img_shit, shit.x, shit.y);
-    }
-  })
+    if(index!=-1)
+        shits.shift();
 }
 function movePeople(){
     if(rightPressed || rightTouched) {
@@ -137,7 +144,7 @@ function draw() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPerson();
-    if(t*1000/fps%shitInterval == 0){
+    if(t*1000/fps % shitInterval == 0){
       makeShit(t);
     }
     drawShit();
