@@ -117,12 +117,12 @@ function drawShit(){
   })
 }
 function movePeople(){
-    if(rightPressed) {
+    if(rightPressed || rightTouched) {
         paddleX += 7;
         if(paddleX >= canvas.width)
             paddleX = 0
     }
-    else if(leftPressed) {
+    else if(leftPressed || leftTouched) {
         paddleX -= 7;
         if(paddleX < 0)
             paddleX = canvas.width - paddleWidth
