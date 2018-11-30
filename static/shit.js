@@ -45,8 +45,8 @@ socket.on("game_user_info", (usernick, x, isAlive)=>{
     }
 })
 var playing_users = []
-const shitInterval = 1;
-const shitSpeed = 5 // 똥 속도 배율
+var shitInterval = 50;
+const shitSpeed = 1 // 똥 속도 배율
 const fps = 50; // 화면 주사율
 const peopleHeight = 50
 const peopleWidth = 30
@@ -210,6 +210,7 @@ function reset(seed){
     multi_status = MUL_PLAYING
     rightPressed = leftPressed = false
     rightTouched = leftTouched = false
+    shitInterval = 50;
     people = new People((canvas.width-peopleWidth)/2, true, nickname, true)
     setSeed(seed)
 }
@@ -219,8 +220,7 @@ function doesShitHitPeople(shit, people){
 }
 
 function timeToMakeShit(){
-    console.log(t*1000/fps + ", " + shitInterval);
-    return (t*1000/fps) % (shitInterval*20) == 0
+    return ((t*1000/fps) % shitInterval) == 0
 }
 
 function drawShit(){
@@ -257,6 +257,10 @@ function drawShit(){
         if(people.isAlive())
             score += scorePerShit;
         max_score += scorePerShit;
+        if(score % 50 == 0 && shitInterval > 0){
+            shitInterval--;
+            console.log(shitInterval);
+        }
     }
 }
 

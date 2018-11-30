@@ -37,10 +37,11 @@ class Shit{
     this.y = 0
     this.t = t
     this.seed = seed
+    this.speed = 1
   }
   moveShit(t){
     // 사라질 똥이면 false를 return한다.
-    this.y += (t-this.t)/2
+    this.y += (t-this.t)/this.speed
     if(this.y >= canvasY){
       return false
     }
