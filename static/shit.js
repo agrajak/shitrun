@@ -201,6 +201,14 @@ function draw() {
 
 function open_menu(){
     document.getElementById("score").value = score;
+    $('#modal_menu').modal({backdrop: 'static', keyboard: false}) ;
+    $('#modal_menu').modal('show')
+}
+
+function open_menu_in_modal_multi(){
+    $('#modal_multi').modal('hide')
+    document.getElementById("score").value = score;
+    $('#modal_menu').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_menu').modal('show')
 }
 
@@ -212,6 +220,7 @@ function single_init(){
 
 function multi_init(){
     $('#modal_menu').modal('hide')
+    $('#modal_multi').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_multi').modal('show')
 }
 
@@ -219,6 +228,7 @@ function multi_ready(){
     $('#modal_multi').modal('hide')
     multi_status = MUL_READY;
     // send server to ready
+    $('#modal_readied').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_readied').modal('show')
 }
 
@@ -226,5 +236,6 @@ function multi_unready(){
     $('#modal_readied').modal('hide')
     multi_status = MUL_UNREADY;
     // send server to unready
+    $('#modal_multi').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_multi').modal('show')
 }
