@@ -15,6 +15,12 @@ class People{
       x = canvasX-30
     }
   }
+  movePeopleLeft(){
+    movePeople(-7)
+  }
+  movePeopleRight(){
+    movePeople(7)
+  }
   getX(){
     return this.x
   }

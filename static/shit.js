@@ -53,15 +53,18 @@ canvas.addEventListener("touchend", touchEndHandler, false);
 
 // EVENT HANDLER FUNCTION
 function keyDownHandler(e) {
-    if(e.keyCode == 39)
+    if(e.keyCode == 39) // ->로 이동
         rightPressed = true;
-    else if(e.keyCode == 37)
+    if(e.keyCode == 37) // <-로 이동
         leftPressed = true;
 
     if(e.keyCode == 80) { // P키
+        // 죽은 상태일때는 무시
+        if(status == DEAD){
+            return
+        }
         if(status == PLAYING){ 
             status = PAUSE
-            console.log(shits.length);
         }
         else 
             status = PLAYING
@@ -94,7 +97,6 @@ function touchEndHandler(e) {
 
 
 function drawPeople(people) {
-    // TODO: if(people.isEnemy())
     if(people.isMe)
         ctx.drawImage(img_man, people.getX(), canvas.height-peopleHeight);
     else 
@@ -127,29 +129,34 @@ function reset(seed){
     people = new People((canvas.width-peopleWidth)/2, true)
     setSeed(seed)
 }
-
+function doesShitHitPeople(shit, people){
+    return Math.abs(shit.getY()-canvas.height) < peopleHeight && Math.abs(shit.getX()-people.getX()) < peopleWidth/2
+}
+function timeToMakeShit(){
+    return t*1000/fps % shitInterval == 0
+}
 function drawShit(){
     let index = -1;
-    
-    for(let i = 0; i < shits.length; i++){
-        let cS = shits[i] // currentShit
-        
+    shits.forEach((shit, i)=>{
         // 똥이 화면을 벗어날때 moveShit은 false를 return한다.
-        if(!cS.moveShit(t)){
+        if(!shit.moveShit(t)){
             index = i;            
         }
+        // 똥이 화면을 벗어나지 않을때 똥을 그린다.
         else {
-            ctx.drawImage(img_shit, cS.getX(), cS.getY());
+            ctx.drawImage(img_shit, shit.getX(), shit.getY());
         }
         // 똥에 맞았을때
-        if (Math.abs(cS.getY()-canvas.height) < peopleHeight && Math.abs(cS.getX()-people.getX()) < peopleWidth/2){
-            console.log("똥: " + cS.getX() + ", " + cS.getY());
+        if (doesShitHitPeople(shit, people)){
+            // print for debug
+            console.log("똥: " + shit.getX() + ", " + shit.getY());
             console.log("사람: " + people.getX())
             alert('최종 점수 : '+score+', 다시 시작하려면 N키를 누르시오')
             status = DEAD
-        }
-    }
+        }        
+    })
     if(index!=-1){
+        // 지울 똥이 있으면 지우고 점수를 더해준다.
         shits.shift();
         score += scorePerShit;
     }
@@ -157,10 +164,10 @@ function drawShit(){
 
 function movePeople(){
     if(rightPressed || rightTouched) {
-        people.movePeople(7)
+        people.movePeopleRight()
     }
     else if(leftPressed || leftTouched) {
-        people.movePeople(-7)
+        people.movePeopleLeft()
     }
 }
 
@@ -172,7 +179,7 @@ function draw() {
     // shitInterval(ms) 마다 될라면...
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if(t*1000/fps % shitInterval == 0)
+    if(timeToMakeShit())
       makeShit(t);
 
     movePeople();
@@ -181,10 +188,8 @@ function draw() {
     drawPeople(people);
 
     drawScore();
-  
     t++;
 }
-
 reset()
-setInterval(draw, 1000/fps);
+setInterval(draw, 1000/fps);    
 // 현재 시간 = 1000/fps*t
