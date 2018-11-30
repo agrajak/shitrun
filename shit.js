@@ -7,16 +7,19 @@ var shitSpeed = 1;
 var fps = 30;
 var t = 0;
 var score = 0;
-var paddleHeight = 10;
+var paddleHeight = 50;
 var paddleWidth = 30;
 var paddleX = (canvas.width-paddleWidth)/2;
 var rightPressed = false;
 var leftPressed = false;
 var shits = []
-var image = new Image();		/* 이미지 객체 생성 */
-image.src = "ddong.png";		/* 이미지 파일 이름 설정 */
 
-const shitInterval = 200
+var img_shit = new Image();
+img_shit.src = "ddong.png";
+var img_man = new Image();
+img_man.src = "man.png";
+
+const shitInterval = 100
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -39,11 +42,7 @@ function keyUpHandler(e) {
 }
 
 function drawPerson() {
-    ctx.beginPath();
-    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
-    ctx.fillStyle = "#0095DD";
-    ctx.fill();
-    ctx.closePath();
+    ctx.drawImage(img_man, paddleX, canvas.height-paddleHeight);
 }
 function makeShit(){
   shits.push({x: Math.floor(Math.random() * canvas.width), y: 0, t:t})
@@ -68,7 +67,7 @@ function drawShit(){
       console.log(score)
     }
     else {
-      ctx.drawImage(image, shit.x, shit.y);
+      ctx.drawImage(img_shit, shit.x, shit.y);
     }
   })
 }
