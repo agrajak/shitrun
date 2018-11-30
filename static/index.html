@@ -8,18 +8,19 @@
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <script src="./model.js"></script>
+  <script src="./shit.js" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <style>
       canvas {
-          border: 1px dotted red;	/* 캔버스에 경계선을 그려준다. */
-          background-color: lightblue;	/* 캔버스의 배경색을 지정한다. */
+        border: 1px dotted red;	/* 캔버스에 경계선을 그려준다. */
+        background-color: lightblue;	/* 캔버스의 배경색을 지정한다. */
       }
   </style>
  </head>
  <body id="body" onload="open_menu()">
    <canvas id="canvas" width="350" height="500"></canvas>
-   <script src="./shit.js" async></script>
    
    <!-- Menu -->
    <div class="modal fade" style="width: 350px" id="modal_menu" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
