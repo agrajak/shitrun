@@ -1,8 +1,9 @@
 const canvasX = 350
 const canvasY = 500
 class People{
-  constructor(x, isMe){
+  constructor(x, isMe, nick){
     this.x = x
+    this.alive = true
     this.y = canvasY
     this.isMe = isMe||true
   }
@@ -14,6 +15,12 @@ class People{
     else if(this.x < 0){
       this.x = canvasX-30
     }
+  }
+  isAlive(){
+    return this.alive
+  }
+  kill(){
+    this.alive = false
   }
   getX(){
     return this.x

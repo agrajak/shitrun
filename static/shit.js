@@ -2,6 +2,29 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const socket = io("165.246.240.185:8088")
 
+// SOCKET
+socket.on('game_start', (users)=>{
+    console.log(users.length+'명이 게임 시작')
+    multi_status = MUL_PLAYING
+    reset()
+    enemys = []
+    users.filter(x=>x.nick != nickname).forEach(x=>{
+        enemys.push(new People(0, false, x.nick))
+    })
+    
+})
+socket.on('game_end', (winner)=>{
+    console.log(`승자는 ${winner}!`)
+    status = MENU
+})
+socket.on("game_user_info", (usernick, x, isAlive)=>{
+    for(var i=0;i<enemys.length;i++){
+        if(enemys[i].nick == usernick){
+            enemys[i].x = x
+            enemys[i].isAlive = isAlive
+        }
+    }
+})
 const shitInterval = 100
 const shitSpeed = 1 // 똥 속도 배율
 const fps = 25; // 화면 주사율
@@ -38,6 +61,7 @@ var multi_status = 0;
 
 const MUL_UNREADY = 0
 const MUL_READY = 1
+const MUL_PLAYING = 2
 
 var timer;
 
@@ -54,6 +78,7 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 canvas.addEventListener("touchstart", touchStartHandler, false);
 canvas.addEventListener("touchend", touchEndHandler, false);
+
 
 
 // EVENT HANDLER FUNCTION
@@ -152,10 +177,14 @@ function drawShit(){
         }
         // 똥에 맞았을때
         if (doesShitHitPeople(shit, people)){
-            // print for debug
+            // print for debuglse 
             console.log("똥: " + shit.getX() + ", " + shit.getY());
             console.log("사람: " + people.getX())
-            status = MENU
+            // 멀티방일때
+            if(multi_status == PLAYING){
+                people.kill()
+            }
+            else status = MENU
         }        
     })
     if(index!=-1){
@@ -173,8 +202,18 @@ function movePeople(){
         people.movePeople(-7)
     }
 }
-
+function drawEnemy(){
+    enemys.forEach(enemy=>{
+        drawPeople(enemy)
+    })
+}
 function draw() {
+    if(multi_status == MUL_PLAYING){
+        status = PLAYING
+        drawEnemy()
+        if(status == DEAD)
+        socket.emit('peopleInfo', {x: people.getX(), alive:people.isAlive()})
+    }
     if(status == MENU){
         clearInterval(timer);
         open_menu();
