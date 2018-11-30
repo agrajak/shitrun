@@ -6,11 +6,12 @@ const socket = io("165.246.240.185:8088")
 socket.on('game_start', (users)=>{
     console.log(users.length+'명이 게임 시작')
     multi_status = MUL_PLAYING
-    reset()
+    
     enemys = []
     users.filter(x=>x.nick != nickname).forEach(x=>{
         enemys.push(new People(0, false, x.nick))
     })
+    multi_start()
     
 })
 socket.on('game_end', (winner)=>{
@@ -261,6 +262,12 @@ function multi_init(){
     $('#modal_menu').modal('hide')
     $('#modal_multi').modal({backdrop: 'static', keyboard: false}) ;
     $('#modal_multi').modal('show')
+}
+
+function multi_start(){
+    $('#modal_multi').modal('hide')
+    reset()
+    timer = setInterval(draw, 1000/fps);
 }
 
 function multi_ready(){
