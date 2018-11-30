@@ -38,12 +38,11 @@ canvas.addEventListener("touchstart", touchStartHandler, false);
 canvas.addEventListener("touchend", touchEndHandler, false);
 
 function keyDownHandler(e) {
-    if(e.keyCode == 39) {
+    if(e.keyCode == 39)
         rightPressed = true;
-    }
-    else if(e.keyCode == 37) {
+    else if(e.keyCode == 37)
         leftPressed = true;
-    }
+
     if(e.keyCode == 80) { // P키
         if(status == PLAYING){ 
             status = PAUSE
@@ -52,19 +51,17 @@ function keyDownHandler(e) {
         else 
             status = PLAYING
     }
-    if(e.keyCode == 78){ // N키
+    if(e.keyCode == 78) // N키
         reset()
-    }
+}
 
-}
 function keyUpHandler(e) {
-    if(e.keyCode == 39) {
+    if(e.keyCode == 39)
         rightPressed = false;
-    }
-    else if(e.keyCode == 37) {
+    else if(e.keyCode == 37)
         leftPressed = false;
-    }
 }
+
 function touchStartHandler(e) {
     if(e.touches[0].clientX < canvas.width / 2){
         leftTouched = true;
@@ -74,6 +71,7 @@ function touchStartHandler(e) {
         rightTouched = true;
     }
 }
+
 function touchEndHandler(e) {
     rightTouched = false;
     leftTouched = false;
@@ -82,17 +80,22 @@ function touchEndHandler(e) {
 function drawPerson() {
     ctx.drawImage(img_man, paddleX, canvas.height-paddleHeight);
 }
+
 function drawScore() {
     ctx.font = "20px Comic Sans MS"
     ctx.fillStyle="black"
     ctx.textAlign="left"
     ctx.fillText("Score:" + score, 10,30);
 }
+
 function drawText(){
+
 }
+
 function makeShit(){
   shits.push({x: Math.floor(Math.random() * canvas.width), y: 0, t:t})
 }
+
 function reset(){
     t = score = 0
     shits = []
@@ -100,6 +103,7 @@ function reset(){
     status = PLAYING
     rightPressed = leftPressed = false
 }
+
 function drawShit(){
     var index = -1;
     for(var i = 0; i < shits.length; i++){
@@ -123,6 +127,7 @@ function drawShit(){
     if(index!=-1)
         shits.shift();
 }
+
 function movePeople(){
     if(rightPressed || rightTouched) {
         paddleX += 7;
@@ -135,18 +140,19 @@ function movePeople(){
             paddleX = canvas.width - paddleWidth
     }
 }
+
 function draw() {
-    if(status != PLAYING){
+    if(status != PLAYING)
         return
-    }
+
     // draw 는 1000/fps(ms) 마다 실행된다.
     // shitInterval(ms) 마다 될라면...
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPerson();
-    if(t*1000/fps % shitInterval == 0){
+    if(t*1000/fps % shitInterval == 0)
       makeShit(t);
-    }
+
     drawShit();
     drawScore();
     movePeople();
