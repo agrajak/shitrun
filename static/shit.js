@@ -3,6 +3,11 @@ const ctx = canvas.getContext("2d");
 const socket = io("165.246.240.185:8088")
 
 // SOCKET
+socket.on('chatroom', (html)=>{
+    var chatroom = $('#chatroom')
+    
+    chatroom.append(chatroom.val() + html)
+})
 socket.on('countdown', (c)=>{
     console.log(`${c}초후 게임시작!`)
 })
@@ -116,6 +121,14 @@ function keyDownHandler(e) {
             rightPressed = true;
         if(e.keyCode == 37) // <-로 이동
             leftPressed = true;
+    }
+    if(e.keyCode == 13){ // 엔터
+        e.preventDefault();
+        
+        var chat = $('#chat').val()
+        console.log(chat)
+        socket.emit('chat', chat)
+        $('#chat').val("")
     }
     if(e.keyCode == 80) { // P키
         // 멀티에선 사용 불가
@@ -261,12 +274,10 @@ function drawEnemy(){
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    console.log(`${enemys.length}명 존재`)
     enemys.forEach(enemy=>{
         drawPeople(new People(enemy.x, false, enemy.nick, enemy.alive))
     })
-    
-    socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive(), score:score}) 
+    socket.emit('peopleInfo', {x: people.getX(), isAlive:people.isAlive(), score, max_score}) 
     
     if(multi_status == MUL_PLAYING){
         console.log(people)
@@ -289,6 +300,7 @@ function draw() {
     movePeople();
 
     drawShit();
+
     drawPeople(people);
 
     drawScore();

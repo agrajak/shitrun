@@ -22,6 +22,12 @@ function startCountDown(){
   countdown = 5
   countTask.start();
 }
+function finishGame(lastone){
+  io.emit('game_end', lastone)
+  console.log('게임 끗!')
+  playing_users = []
+  status = WAITING
+}
 var countTask = cron.schedule('* * * * * *', ()=>{
   if(status == PLAYING)
     return
@@ -40,7 +46,7 @@ var countTask = cron.schedule('* * * * * *', ()=>{
     playing_users = []
     users.filter(x=>x.ready).forEach(x=>{
       playing_users.push({
-        id: x.id, nick: x.nick, alive: true
+        id: x.id, nick: x.nick, alive: true, max_score: 0
       })
     })
     console.log(`현재 ${playing_users.length}명 접속중`)
@@ -65,33 +71,48 @@ io.on('connection', socket=>{
     if(socket.id in users.map(u=>u.id)){
       users.splice(users.map(x=>x.id).indexOf(socket.id), 1)
     }
-    console.log('현재 접속자수 :'+users.length)
-
+  })
+  socket.on('chat', (chat)=>{
+    console.log(socket.nick + ":"+chat)
+    io.emit('chatroom', `<b>${socket.nick}</b>(${socket.ready?'레디':'안레디'}): ${chat}<br>`)
   })
   socket.on('peopleInfo', (data)=>{
     if(status != PLAYING){
       return;
     }
-    var {x, isAlive} = data
-    console.log(socket.nick + ", " +  x);
+    var {x, isAlive, score, max_score} = data
     io.emit('game_user_info', socket.nick, x, isAlive)
-    if(isAlive == false){
-      let lastone = ''
+      var lastone = ''
       for(var i=0;i<playing_users.length;i++){
+        // 조건에 맞는 아이디를 찾으면
         if(playing_users[i].nick == socket.nick){
+          if(isAlive == false){
+            playing_users[i].alive = false
+          }
           lastone = playing_users[i].nick
-          playing_users[i].alive = false
+          playing_users[i].max_score = max_score
           break;
         }
       }
       // 살아있는 놈이 없을때...
       if(playing_users.filter(x=>x.alive == true).length == 0){
-        io.emit('game_end', lastone)
-        playing_users = []
-        status = WAITING
+        finishGame(lastone)
       }
 
-    }
+      // 혹은 maxScore의 최대와 최소값이 100이상 차이날때 => 잠수다. 서버 종료
+      var maxScore = -1
+      var minScore = 999999
+      playing_users.forEach(p=>{
+        if(p.max_score > maxScore){
+          maxScore = p.max_score
+        }
+        else if(p.max_score < minScore){
+          minScore = p.max_score
+        }
+      })
+      if(maxScore - minScore > 200){
+        finishGame(null)
+      }
   })
   socket.on('login', (nick, ready)=>{
     let id = socket.id
