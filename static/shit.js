@@ -50,7 +50,7 @@ const shitSpeed = 5 // 똥 속도 배율
 const fps = 50; // 화면 주사율
 const peopleHeight = 50
 const peopleWidth = 30
-const scorePerShit = 20
+const scorePerShit = 10
 
 var seed = "seed"
 var t = 0; // 시간(clock)
@@ -220,7 +220,7 @@ function doesShitHitPeople(shit, people){
 
 function timeToMakeShit(){
     console.log(t*1000/fps + ", " + shitInterval);
-    return (t*1000/fps) % (shitInterval*40) == 0
+    return (t*1000/fps) % (shitInterval*20) == 0
 }
 
 function drawShit(){

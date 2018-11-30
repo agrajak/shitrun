@@ -40,7 +40,7 @@ class Shit{
   }
   moveShit(t){
     // 사라질 똥이면 false를 return한다.
-    this.y += t-(this.t)
+    this.y += (t-this.t)/2
     if(this.y >= canvasY){
       return false
     }
