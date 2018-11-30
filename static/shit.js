@@ -124,8 +124,10 @@ function drawShit(){
         else
             ctx.drawImage(img_shit, shits[i].x, shits[i].y);
     }
-    if(index!=-1)
+    if(index!=-1){
         shits.shift();
+        score += 20;
+    }
 }
 
 function movePeople(){
